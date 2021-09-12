@@ -1,4 +1,6 @@
+import json
 import os
+
 import boto3
 import requests
 
@@ -19,7 +21,8 @@ MSG_COMPARISON_KEYS = [
 
 def find(iterable, predicate):
     for item in iterable:
-        if predicate(item): return item
+        if predicate(item):
+            return item
     return None
 
 
@@ -72,18 +75,21 @@ def make_discord_msg(thread, username):
         ]
     }
 
+
 def update_messages(courses, threads_table_name, ed_token, discord_webhook_url):
     dynamodb = boto3.resource("dynamodb")
     threads_table = dynamodb.Table(threads_table_name)
 
-    courses_data = requests.get(ED_API_URL + "/user", headers={"X-Token": ed_token}).json()["courses"]
+    courses_data = requests.get(
+        ED_API_URL + "/user", headers={"X-Token": ed_token}).json()["courses"]
 
     threads = []
-    for course_id in courses:
-        thread_data = requests.get(THREADS_API_URL.format(course_id=course_id), params={"limit": 100, "sort": "new"}, headers={"X-Token": ed_token}).json()
+    for course in courses:
+        thread_data = requests.get(THREADS_API_URL.format(course_id=course["id"]), params={
+                                   "limit": 100, "sort": "new"}, headers={"X-Token": ed_token}).json()
 
         for thread in thread_data["threads"]:
-            if thread["is_private"]:
+            if thread["is_private"] or not course["include_private"]:
                 continue
 
             threads.append(thread)
@@ -93,9 +99,11 @@ def update_messages(courses, threads_table_name, ed_token, discord_webhook_url):
     thread_metas = threads_table.scan()["Items"]
 
     for thread in threads:
-        thread_meta = find(thread_metas, lambda t: t["thread_id"] == thread["id"])
+        thread_meta = find(
+            thread_metas, lambda t: t["thread_id"] == thread["id"])
 
-        course = find(courses_data, lambda c: c["course"]["id"] == thread["course_id"])["course"]
+        course = find(courses_data, lambda c: c["course"]["id"] == thread["course_id"])[
+            "course"]
         msg = make_discord_msg(thread, f"{course['code']}: {course['name']}")
 
         if thread_meta is not None:
@@ -105,10 +113,12 @@ def update_messages(courses, threads_table_name, ed_token, discord_webhook_url):
             if actual == stored:
                 continue
 
-            msg = requests.patch(discord_webhook_url + f"/messages/{thread_meta['discord_message_id']}", json=msg, params={"wait": True}).json()
+            msg = requests.patch(
+                discord_webhook_url + f"/messages/{thread_meta['discord_message_id']}", json=msg, params={"wait": True}).json()
         else:
-            msg = requests.post(discord_webhook_url, json=msg, params={"wait": True}).json()
-        
+            msg = requests.post(discord_webhook_url, json=msg,
+                                params={"wait": True}).json()
+
         threads_table.put_item(
             Item={
                 "thread_id": thread["id"],
@@ -116,12 +126,13 @@ def update_messages(courses, threads_table_name, ed_token, discord_webhook_url):
             } | {key: thread[key] for key in MSG_COMPARISON_KEYS}
         )
 
+
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
 
     update_messages(
-        [int(c.strip()) for c in os.environ["COURSES"].split(",")],
+        json.loads(os.environ["COURSES"]),
         os.environ["TABLE_NAME"],
         os.environ["ED_TOKEN"],
         os.environ["DISCORD_WEBHOOK_URL"]

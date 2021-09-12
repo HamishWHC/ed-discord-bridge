@@ -8,7 +8,7 @@ from update_messages import update_messages
 
 def handler(_event, _context):
     secret_arn = os.environ["SECRET_ARN"]
-    courses = [int(c.strip()) for c in os.environ["COURSES"].split(",")]
+    courses = json.loads(os.environ["COURSES"])
     threads_table_name = os.environ["TABLE_NAME"]
 
     sm_client = boto3.client('secretsmanager')
