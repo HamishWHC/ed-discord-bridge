@@ -15,7 +15,8 @@ MSG_COMPARISON_KEYS = [
     "type",
     "category",
     "vote_count",
-    "view_count"
+    "view_count",
+    "reply_count"
 ]
 
 
@@ -69,6 +70,11 @@ def make_discord_msg(thread, username):
                         "name": "Views",
                         "value": f"{thread['view_count']}",
                         "inline": True
+                    },
+                    {
+                        "name": "Replies",
+                        "value": f"{thread['reply_count']}",
+                        "inline": True
                     }
                 ]
             }
@@ -107,8 +113,8 @@ def update_messages(courses, threads_table_name, ed_token, discord_webhook_url):
         msg = make_discord_msg(thread, f"{course['code']}: {course['name']}")
 
         if thread_meta is not None:
-            actual = {key: thread[key] for key in MSG_COMPARISON_KEYS}
-            stored = {key: thread_meta[key] for key in MSG_COMPARISON_KEYS}
+            actual = {key: thread.get(key, None) for key in MSG_COMPARISON_KEYS}
+            stored = {key: thread_meta.get(key, None) for key in MSG_COMPARISON_KEYS}
 
             if actual == stored:
                 continue
