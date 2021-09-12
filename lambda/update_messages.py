@@ -89,7 +89,7 @@ def update_messages(courses, threads_table_name, ed_token, discord_webhook_url):
                                    "limit": 100, "sort": "new"}, headers={"X-Token": ed_token}).json()
 
         for thread in thread_data["threads"]:
-            if thread["is_private"] or not course["include_private"]:
+            if thread["is_private"] and not course["include_private"]:
                 continue
 
             threads.append(thread)
