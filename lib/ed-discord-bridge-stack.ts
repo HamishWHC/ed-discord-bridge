@@ -30,7 +30,7 @@ export class EdDiscordBridgeStack extends cdk.Stack {
             handler: "handler.handler",
             environment: {
                 TABLE_NAME: table.tableName,
-                COURSES: (this.node.tryGetContext("courses") as number[]).join(","),
+                COURSES: JSON.stringify(this.node.tryGetContext("courses")),
                 SECRET_ARN: secretArn
             },
             timeout: cdk.Duration.minutes(1),
