@@ -1,0 +1,5 @@
+{
+    "courseIds": [7082],
+    "secretArn": "arn:aws:secretsmanager:ap-southeast-2:319320589528:secret:ed-discord-bridge-8N8WFY",
+    "updateFrequency": 10
+}
