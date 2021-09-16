@@ -48,7 +48,7 @@ def make_discord_msg(thread, username):
                     "text": "ed-Discord Bridge by HamishWHC"
                 },
                 "author": {
-                    "name": f"{thread['user']['name']} [{thread['user']['course_role'].capitalize()}]"
+                    "name": f"{thread['user']['name']} [{thread['user']['course_role'].capitalize()}]" if not thread["is_anonymous"] else "Anonymous"
                 },
                 "fields": [
                     {
