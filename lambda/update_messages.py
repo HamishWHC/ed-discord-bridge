@@ -89,6 +89,8 @@ def make_discord_msg(thread, username):
             "value": "Yes" if thread["is_answered"] else "No",
             "inline": True
         })
+    
+    return msg
 
 
 def update_messages(courses, threads_table_name, ed_token, discord_webhook_url):
