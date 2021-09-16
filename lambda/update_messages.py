@@ -16,7 +16,9 @@ MSG_COMPARISON_KEYS = [
     "category",
     "vote_count",
     "view_count",
-    "reply_count"
+    "reply_count",
+    "is_answered",
+    "is_anonymous"
 ]
 
 
@@ -35,7 +37,7 @@ def smart_truncate(content, length=250, suffix='...'):
 
 
 def make_discord_msg(thread, username):
-    return {
+    msg = {
         "username": username,
         "embeds": [
             {
@@ -80,6 +82,13 @@ def make_discord_msg(thread, username):
             }
         ]
     }
+
+    if thread["type"] == "question":
+        msg["embeds"][0]["fields"].append({
+            "name": "Answered",
+            "value": "Yes" if thread["is_answered"] else "No",
+            "inline": True
+        })
 
 
 def update_messages(courses, threads_table_name, ed_token, discord_webhook_url):
