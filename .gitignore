@@ -7,3 +7,5 @@ cdk.out
 build
 venv
 .env
+
+.DS_Store

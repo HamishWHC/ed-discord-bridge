@@ -89,7 +89,7 @@ def make_discord_msg(thread, username):
             "value": "Yes" if thread["is_answered"] else "No",
             "inline": True
         })
-    
+
     return msg
 
 
