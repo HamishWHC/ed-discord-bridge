@@ -5,7 +5,7 @@ node_modules
 cdk.out
 
 build
-venv
+.venv
 .env
 
 .DS_Store

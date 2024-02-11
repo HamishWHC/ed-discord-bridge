@@ -94,16 +94,18 @@ def make_discord_msg(thread, username):
 
 
 def update_messages(courses, threads_table_name, ed_token, discord_webhook_url):
+    session = requests.session()
+    session.headers["Authorization"] = f"Bearer {ed_token}"
+
     dynamodb = boto3.resource("dynamodb")
     threads_table = dynamodb.Table(threads_table_name)
 
-    courses_data = requests.get(
-        ED_API_URL + "/user", headers={"X-Token": ed_token}).json()["courses"]
+    courses_data = session.get(ED_API_URL + "/user").json()["courses"]
 
     threads = []
     for course in courses:
-        thread_data = requests.get(THREADS_API_URL.format(course_id=course["id"]), params={
-                                   "limit": 100, "sort": "new"}, headers={"X-Token": ed_token}).json()
+        thread_data = session.get(THREADS_API_URL.format(course_id=course["id"]), params={
+                                   "limit": 100, "sort": "new"}).json()
 
         for thread in thread_data["threads"]:
             if thread["is_private"] and not course["include_private"]:
